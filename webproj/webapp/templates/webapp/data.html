@@ -1,0 +1,8 @@
+{% extends "webapp/header.html" %}
+
+{% block content %}
+    {% for obj in object_list %}
+    <h5><a href="/data/{{obj.id}}">{{obj.fname}}</a> &nbsp</h5> <p>{{obj.date| date:"Y-m-d"}}</p>
+    {% endfor %}
+
+{% endblock %}

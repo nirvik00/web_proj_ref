@@ -1,0 +1,15 @@
+{% extends "webapp/header.html" %}
+
+
+{% block content %}
+
+    {% for i in data0 %}
+        <p>{{ i }}</p>
+    {% endfor %}
+    <script type="text/javascript">
+        var x= "{{data0}}";
+        alert("ok" + x);
+    </script>
+.
+
+{% endblock %}

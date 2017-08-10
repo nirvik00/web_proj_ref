@@ -1,0 +1,13 @@
+{% extends "webapp/header.html" %}
+
+<!-- the name of the variable must be small letters as that of model name -->
+
+{% block content %}
+    <h3> {{ info.lname }}, {{ info.fname }} </h3>
+    <h6> {{ info.date }} </h6>
+    <script>
+        var x={{info}};
+        alert(x.fname);
+    </script>
+    {{ obj.body | safe | linebreaks}}
+{% endblock %}
