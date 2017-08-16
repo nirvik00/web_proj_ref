@@ -1,0 +1,292 @@
+{% extends "webapp/header.html" %}
+
+
+{% block content %}
+    <div id="inp">
+        Weight in range : &nbsp; &nbsp;&nbsp; &nbsp;
+        <font  style="color: rgb(0,0,150);">Min Wt : 10</font>
+        <input type="range" min="10" max="100" step="3" value="30" id="minRange"  onchange="updateSliderInfo()"/>
+        <font color="red">100</font>
+        &nbsp; &nbsp;&nbsp; &nbsp;
+        <font  style="color: rgb(0,0,150);">Max Wt : 10</font>
+        <input type="range" min="10" max="100" step="3" value="60" id="maxRange"  onchange="updateSliderInfo()"/>
+        <font color="red">100</font>
+        &nbsp; &nbsp;&nbsp; &nbsp;
+        <button onclick="generateGraph()">Generate Graph</button>
+        <div id="sliderDiv">default Values : min = 40 , max = 60</div>
+    </div>
+    <br><br>
+    <p id="graph"></p>
+
+    <script type="text/javascript">
+    function updateSliderInfo(){
+        var min=document.getElementById("minRange").value;
+        var max=document.getElementById("maxRange").value;
+        var sliderDiv = document.getElementById("sliderDiv");
+        sliderDiv.innerHTML = "updated values : minimum value = "+min +" maximum value = "+max ;
+    }
+    function generateGraph(){
+        var nodes=[];
+        var edges=[];
+        function conNodes(name, val){
+            this.name=name;
+            this.val=val;
+        }
+        function conEdges(source, target, value){
+            this.source=source;
+            this.target=target;
+            this.value=value;
+        }
+        var nodeArr= {{node_li | safe}};
+        var edgeArr= {{edge_li | safe}};
+        var edgeArrStr= {{edge_li_str | safe}};
+
+        d3.selectAll("svg > *").remove();
+            var myNode = document.getElementById("graph");
+            while (myNode.firstChild) {
+                myNode.removeChild(myNode.firstChild);
+            }
+
+            var minWt=document.getElementById("minRange").value;
+            var maxWt=document.getElementById("maxRange").value;
+            var nodes=[];
+            var edges_t=[];
+            function conNodes(name, val){
+                this.name=name;
+                this.val=val;
+            }
+            function conEdges(source, target, value){
+                this.source=source;
+                this.target=target;
+                this.value=value;
+            }
+            var nodeArr= {{node_li | safe}};
+            var edgeArr= {{edge_li | safe}};
+            var edgeArrStr= {{edge_li_str | safe}};
+
+            // ADD FILTER TO EDGE WEIGHT
+            for(var i=0; i<edgeArr.length; i++){
+                var source=edgeArr[i][0];
+                var target=edgeArr[i][1];
+                var val=edgeArr[i][2];
+                if(val>minWt && val<maxWt && source!=target){
+                    var b=new conEdges(source, target, val);
+                    edges_t.push(b);
+                }
+            }
+            console.log(edges_t);
+            var node_t=[];
+            var edges_r=[];
+            for(var i=0; i<edges_t.length; i++){
+                var u=edges_t[i].source;
+                var v=edges_t[i].target;
+                var m=nodeArr[u];
+                var n=nodeArr[v];
+                var sum=0;
+                for (var j=0; j<node_t.length; j++){
+                    var p=node_t[j];
+                    if(m==p || n==p){
+                        sum++;
+                    }
+                }
+                if(sum==0){
+                    node_t.push(u);
+                    node_t.push(v);
+                }
+            }
+            var node_f=[];
+            for(var i=0; i<node_t.length; i++){
+                var u=node_t[i];
+                var sum=0;
+                for(var j=0; j<node_f.length; j++){
+                    var v=node_f[j];
+                    if(u==v){
+                        sum++;
+                    }
+                }
+                if(sum==0){
+                    node_f.push(u);
+                }
+            }
+
+            for(var i=0; i<node_f.length; i++){
+                var u=node_f[i];
+                var name=nodeArr[u][0];
+                var value=nodeArr[u][1];
+                var a=new conNodes(name,value);
+                nodes.push(a);
+            }
+
+            var edges_r=[];
+            for(var i=0; i<edges_t.length; i++){
+                var u=edges_t[i].source;
+                var v=edges_t[i].target;
+                var w=edges_t[i].value;
+                var m=nodeArr[u][0];
+                var n=nodeArr[v][0];
+                var e=new conEdges(m,n,w);
+                console.log("edges_r : "+m+","+n+","+w);
+                edges_r.push(e);
+            }
+
+            var edges=[];
+            for(var i=0; i<edges_r.length; i++){
+                var u=edges_r[i].source;
+                var v=edges_r[i].target;
+                var w=edges_r[i].value;
+                var a=-1;
+                var b=-1;
+                for(var j=0; j<nodes.length; j++){
+                    var m=nodes[j].name;
+                    if(u==m){
+                        a=j;
+                        break;
+                    }
+                }
+                for(var j=0; j<nodes.length; j++){
+                    var n=nodes[j].name;
+                    if(v==n){
+                        b=j;
+                        break;
+                    }
+                }
+                if(a>-1 && b>-1){
+                    var f=new conEdges(a,b,w);
+                    edges.push(f);
+                }
+            }
+            console.log(nodes);
+            console.log(edges);
+
+            var dataset={nodes,edges};
+
+        var w=1250, h=850, linkDistance=350;
+        var colors = d3.scale.category10();
+        var widthScale=d3.scale.linear()
+                          .domain([1,1000])
+                          .range([20,100]);
+
+        var svg = d3.select("p").append("svg")
+                        .attr("width",w)
+                        .attr("height",h);
+
+        var force = d3.layout.force()
+            .nodes(dataset.nodes)
+            .links(dataset.edges)
+            .size([w,h])
+            .linkDistance([linkDistance])
+            .charge([-2000])
+            .theta(0.5)
+            .gravity(0.50)
+            .start();
+
+        var edges = svg.selectAll("line")
+          .data(dataset.edges)
+          .enter()
+          .append("line")
+          .attr("id",function(d,i) {return 'edge'+i})
+          .attr('marker-end','url(#arrowhead)')
+          .style("stroke","#ccc")
+          .style("pointer-events", "none");
+
+        var nodes = svg.selectAll("rect")
+          .data(dataset.nodes)
+          .enter()
+          .append("rect")
+          .attr("width",function(d){ return widthScale(d.val);})
+          .attr("height",function(d){ return widthScale(d.val);})
+          .style("opacity",0.70)
+          .style("fill",function(d,i){return colors(i);})
+          .call(force.drag)
+
+        var nodelabels = svg.selectAll(".nodelabel")
+           .data(dataset.nodes)
+           .enter()
+           .append("text")
+           .attr({"x":function(d){return d.x;},
+                  "y":function(d){return d.y;},
+                  "class":"nodelabel",
+                  "stroke":"black"})
+           .attr("font-size", 10)
+           .text(function(d){return d.name;});
+
+        var edgepaths = svg.selectAll(".edgepath")
+            .data(dataset.edges)
+            .enter()
+            .append('path')
+            .attr({'d': function(d) {return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y},
+                   'class':'edgepath',
+                   'fill-opacity':0,
+                   'stroke-opacity':0,
+                   'fill':'blue',
+                   'stroke':'red',
+                   'id':function(d,i) {return 'edgepath'+i}})
+            .style("pointer-events", "none");
+
+        var edgelabels = svg.selectAll(".edgelabel")
+            .data(dataset.edges)
+            .enter()
+            .append('text')
+            .style("pointer-events", "none")
+            .attr({'class':'edgelabel',
+                   'id':function(d,i){return 'edgelabel'+i},
+                   'dx':80,
+                   'dy':0,
+                   'font-size':5,
+                   'fill':'#aaa'});
+
+        edgelabels.append('textPath')
+            .attr('xlink:href',function(d,i) {return '#edgepath'+i})
+            .style("pointer-events", "none")
+            //.text(function(d,i){return 'label '+i});
+
+        svg.append('defs').append('marker')
+            .attr({'id':'arrowhead',
+                   'viewBox':'-0 -5 10 10',
+                   'refX':25,
+                   'refY':0,
+                   //'markerUnits':'strokeWidth',
+                   'orient':'auto',
+                   'markerWidth':10,
+                   'markerHeight':10,
+                   'xoverflow':'visible'})
+            .append('svg:path')
+                .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+                .attr('fill', 'rgb(10,10,10')
+                .attr('stroke','#ccc');
+
+        force.on("tick", function(){
+
+        edges.attr({"x1": function(d){return d.source.x;},
+                    "y1": function(d){return d.source.y;},
+                    "x2": function(d){return d.target.x;},
+                    "y2": function(d){return d.target.y;}
+        });
+
+        nodes.attr({"x":function(d){return d.x;},
+                    "y":function(d){return d.y;}
+        });
+
+        nodelabels.attr("x", function(d) { return d.x; })
+                  .attr("y", function(d) { return d.y; });
+
+        edgepaths.attr('d', function(d) { var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y;
+                                           //console.log(d)
+                                           return path});
+
+        edgelabels.attr('transform',function(d,i){
+            if (d.target.x<d.source.x){
+                bbox = this.getBBox();
+                rx = bbox.x+bbox.width/2;
+                ry = bbox.y+bbox.height/2;
+                return 'rotate(180 '+rx+' '+ry+')';
+                }
+            else {
+                return 'rotate(0)';
+                }
+            });
+        });
+    }
+    </script>
+
+{% endblock %}

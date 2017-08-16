@@ -1,0 +1,55 @@
+{% extends "webapp/header.html" %}
+
+
+{% block content %}
+    <p id="departments with cells">
+        List of all departments with cells:
+        <ol>
+            {% for i in dept_di %}
+                <input type="checkbox" name="dept_name" value="{{ i }}"/>{{ i }}<br>
+            {% endfor %}
+        </ol>
+        <br>
+    </p>
+    Select the department & generate
+    <button onclick="generateGraph()">Generate Graph</button>
+    <br><br>
+    <p id="graph"></p>
+
+    <script type="text/javascript">
+
+    var dept_di= {{dept_di | safe}};
+    var nodes= {{nodes | safe}};
+    console.log(nodes);
+    console.log(dept_di);
+
+    function cellObj(name, value){
+        this.name=name;
+        this.value=value;
+    }
+
+    function generateGraph(){
+        var dept_all = document.getElementsByName("dept_name");
+        var dept_arr=[];
+        for(var i=0; i<dept_all.length; i++){
+            if(dept_all[i].checked){
+                dept_arr.push(dept_all[i].value);
+            }
+        }
+        d3.selectAll("svg > *").remove();
+        var myNode=document.getElementById("graph");
+        while(myNode.firstChild){
+            myNode.removeChild(myNode.firstChild);
+        }
+        console.log(dept_arr);
+        for(var i=0; i<dept_arr.length; i++){
+            for(var j=0; j<dept_di.length; j++){
+                if(dept_di[j]==dept_arr[i]){
+                    console.log(dept_di[j]);
+                }
+            }
+        }
+    }
+    </script>
+
+{% endblock %}

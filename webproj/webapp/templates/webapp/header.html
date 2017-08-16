@@ -2,10 +2,11 @@
 <html lang="en">
 
 <head>
-	<title>Nirvik Saha</title>
+	<title>Graphs & Adjacency Matrices</title>
 	<meta charset="utf-8" />
 	{% load staticfiles %}
 	<link rel="stylesheet" href="{% static 'webapp/css/bootstrap.min.css' %}" type = "text/css"/>
+	<script src="{% static 'webapp/js/d3.v3.min.js' %}" type = "text/javascript"></script>
 	<meta name="viewport" content = "width=device-width, initial-scale=1.0">
 
 	<style type="text/css">
@@ -22,7 +23,9 @@
 			  <div class="col-sm-2">
 				  <br>
 				  <center>
-					<img src="{% static 'webapp/img/profile.jpg' %}" class="responsive-img" style='max-height:100px;' alt="face">
+						<!--
+						<img src="{% static 'webapp/img/profile.jpg' %}" class="responsive-img" style='max-height:100px;' alt="face">
+					 -->
 				  </center>
 			  </div>
 			  <div class="col-sm-10">
@@ -45,10 +48,16 @@
 				<li><a href='/'>Home</a></li><br>
 				<li><a href='/data/'>Data</a></li><br>
 				<li><a href='/contact/'>Contact</a></li><br>
+				  <li><a href='/layout-ex/'>Example Layout System</a></li><br>
+				  <li><a href='/layout-cells/'>Layout Individual Cells</a></li><br>
+				  <li><a href='/layout-dept/'>Layout Department</a></li><br>
+				  <li><a href='/dept-cells/'>Department & Cells Treemap</a></li><br>
+				  <li><a href='/dept-dept/'>Search Department & Connect</a></li><br>
 			  </ul>
 			</div> <!--well bs-sidebar affix-->
 		  </div> <!--col-sm-2-->
 		  <div class="col-sm-10">
+
 
 			<div class='container-fluid'>
 			<br><br>
@@ -67,3 +76,4 @@
 </body>
 
 </html>
+
