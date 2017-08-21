@@ -6,33 +6,27 @@
         List of all departments with cells:
         <ol>
             {% for i in req_dept_cell_str %}
-                <input type="radio" name="dept_name" value="{{ i }}"/>{{ i }}<br>
+                <input type="radio" name="dept_name" value=" {{ i }}"/>{{ i }}<br>
             {% endfor %}
         </ol>
         <br>
     </p>
     Select the department & generate
-    <button onclick="generateGraph()">Generate Treemap</button>
+    <button onclick="generateGraph()">Generate Treemap of Selection</button>
     <br><br>
-    List of departments without cells:
-    <p id="noCellDeptLi">
-        <ol>
-            {% for i in req_dept_unique_str %}
-                <li>{{ i }}</li>
-            {% endfor %}
-        </ol>
-    </p>
-    <p id="graph"></p>
+
+    <p id="treemap"></p>
 
     <script type="text/javascript">
 
     var dept_li= {{req_dept_cell_str | safe}};
     var nodes= {{nodes | safe}};
-    console.log(nodes);
+    //console.log(nodes);
 
-    function cellObj(name, value){
+    function cellObj(name, value, children){
         this.name=name;
         this.value=value;
+        this.children=children;
     }
 
     function generateGraph(){
@@ -40,12 +34,14 @@
         //alert("selected dept : " +req_dept.split("-")[0]);
 
         d3.selectAll("svg > *").remove();
-        var myNode=document.getElementById("graph");
+        var myNode=document.getElementById("treemap");
         while(myNode.firstChild){
             myNode.removeChild(myNode.firstChild);
         }
 
         var cellobj_arr=[];
+        var dept_name=req_dept.split("-")[0];
+
         var cell_arr=req_dept.split("-")[1].split(",");
         for(var i=0; i<cell_arr.length; i++){
             var u=cell_arr[i];
@@ -54,13 +50,51 @@
                 var v=nodes[j][0];
                 var w=nodes[j][1];
                 if(v==u){
-                    var a=new cellObj(u, w);
+                    var a=new cellObj(u, w, []);
                     cellobj_arr.push(a);
                     break;
                 }
             }
         }
         console.log(cellobj_arr);
+        var total_value=parseFloat(0);
+        for(var i=0; i<cellobj_arr.length; i++){
+            total_value+=parseFloat(cellobj_arr[i].value);
+        }
+        console.log("total_value : "+total_value);
+        var odata=new cellObj(dept_name, total_value, cellobj_arr);
+
+        var color=d3.scale.category10()
+
+        var canvas=d3.select("#treemap").append("svg")
+           .attr("width",500)
+           .attr("height",500);
+
+        var treemap=d3.layout.treemap()
+           .size([500,500])
+           .nodes(odata);
+
+        console.log(treemap);
+
+       var cells=canvas.selectAll(".cell")
+         .data(treemap)
+         .enter()
+             .append("g")
+             .attr("class","cell");
+
+        cells.append("rect")
+         .attr("x",function(d){return d.x})
+         .attr("y",function(d){return d.y})
+         .attr("width",function(d){return d.dx})
+         .attr("height",function(d){return d.dy})
+         .attr("fill", function(d) {return d.children ? null : color(d.value)})
+         .attr("stroke", "white")
+         .attr("stroke-width", 10);
+
+       cells.append("text")
+         .attr("x", function(d) { return d.x + d.dx/2 } )
+         .attr("y", function(d) { return d.y + d.dy/2 } )
+         .text(function(d){ return d.children ? null : d.name});
     }
     </script>
 

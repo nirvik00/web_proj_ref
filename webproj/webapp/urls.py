@@ -5,15 +5,16 @@ from . models import Info
 
 
 urlpatterns = [
-    url(r'^$', views.index, name="index"),
+
+    url(r'^$', views.home, name="index"),
 
     url(r'^contact/$', views.contact, name="contact"),
 
-    # look at modelname.objects.all() -> object_list is the variable in data.html
-    url(r'^data/$', ListView.as_view(queryset=Info.objects.all().order_by("-date")[:25], template_name="webapp/data.html")),
+    #contacts
+    url(r'^contact/$', views.contact ,name='contact'),
 
-    #the name of the variable must be small letters as that of model name
-    url(r'^data/(?P<pk>\d+)/$', DetailView.as_view(model=Info,template_name="webapp/entry.html")),
+    #display data
+    url(r'^data/$', views.display_data, name='display_data'),
 
     #list data passing to javascript for d3 rendering
     url(r'^layout-ex/$', views.layout_ex, name="layout_ex"),
@@ -25,8 +26,17 @@ urlpatterns = [
     url(r'^layout-dept/$', views.layout_dept, name="layout_dept"),
 
     #search for a department and treemap plot cells in it
-    url(r'dept-cells/$', views.dept_cells, name="dept-cells"),
+    url(r'^dept-cells/$', views.dept_cells, name="dept-cells-treemap"),
 
-    #search for departments to be connected
-    url(r'dept-dept/$', views.dept_dept, name="dept-dept"),
+    #treemap layout of departments to be connected
+    url(r'^dept-dept/$', views.dept_dept, name="dept-dept-treemap"),
+
+    # complete treemap layout of all cells
+    url(r'^cells/$', views.cells_treemap, name="cells_treemap"),
+
+    # search & generate treemap & force layout of departments
+    url(r'^flo-dept/$', views.se_dept, name="select_dept"),
+
+    # search & generate treemap & force layout of departments
+    url(r'^flo-cells/$', views.se_dept_cells, name="se_dept_cells"),
 ]

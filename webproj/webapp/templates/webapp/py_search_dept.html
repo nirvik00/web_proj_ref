@@ -1,0 +1,324 @@
+{% extends "webapp/header.html" %}
+
+
+{% block content %}
+    <p>Select departments and plot force layout without cells</p>
+    <div style="width:100%">
+      <!--<div id="data" style="float:left; width:30%">-->
+      <div id="data" style="float:left;">
+          <ul></ul>
+      </div>
+      <div style="float:right">
+        <p id="graph"></p>
+      </div>
+
+    </div>
+
+    <div style="clear:both">
+      <input type="button" value="Generate Layout" onclick="genLayout()">
+    </div>
+
+    <script type="text/javascript">
+
+    var dept_arr= {{req_dept_cell_str | safe}};
+    var dept_u_arr= {{req_dept_unique_str | safe}};
+    var nodes_ref= {{nodes | safe}};
+    var dt_conn_li_str= {{dt_conn_li_str | safe}};
+    console.log(nodes_ref);
+    console.log(dt_conn_li_str);
+    //console.log(dept_arr);
+    //console.log(dept_u_arr);
+    window.onload=addDeptData();
+    //DYNAMICALLY GENERATE CHECKBOXES
+    function addDeptData(){
+        var dept_arr_cb=[];
+        for(var i=0; i<dept_arr.length; i++){
+            var n=dept_arr[i].split("-")[0];
+            dept_arr_cb.push(n)
+        }
+        for(var i=0; i<dept_u_arr.length; i++){
+            var n=dept_u_arr[i];
+            dept_arr_cb.push(n)
+        }
+
+        var list=document.getElementById("data");
+        var linebreak=document.createElement("br");
+        for(var i=0; i<dept_arr_cb.length ; i++){
+            var item=document.createElement("input");
+            item.class="messageBoxClass";
+            item.type="checkbox";
+            item.name="messageBoxName";
+            item.value=dept_arr_cb[i].split("-")[0];
+            item.id="data_cb";
+
+            var label=document.createElement("label");
+            label.htmlFor="id";
+            label.appendChild(document.createTextNode(dept_arr_cb[i].split("-")[0]));
+            list.appendChild(item);
+            list.innerHTML += ' &nbsp; &nbsp; ';
+            list.appendChild(label);
+            var linebreak=document.createElement("br");
+            list.appendChild(linebreak);
+        }
+    }
+
+    //CREATE CELL OBJ CLASS - TREE LAYOUT
+    function cellObj(name, value, children){
+        this.name=name;
+        this.value=value;
+        this.children=children;
+    }
+    //NODES FOR FORCE LAYOUT
+    function conNodes(name, val){
+        this.name=name;
+        this.val=val;
+    }
+    //EDGES FOR FORCE LAYOUT
+    function conEdges(source, target, value){
+        this.source=source;
+        this.target=target;
+        this.value=value;
+    }
+
+    //RESOLVE CHECKBOX INPUT
+    function check_dt_conx(dt_name0, dt_name1 , ki , kj){
+        var sum=0;
+        var idx="";
+        for(var i=0; i<dt_conn_li_str.length; i++){
+          var name0=dt_conn_li_str[i][0];
+          var name1=dt_conn_li_str[i][1];
+          if(name0==dt_name0 && name1==dt_name1){
+            sum++;
+            var wt=dt_conn_li_str[i][2];
+            idx+=ki+","+kj+","+wt;
+          }else if (name0==dt_name1 && name1==dt_name0) {
+            sum++;
+            var wt=dt_conn_li_str[i][2];
+            idx+=kj+","+ki+","+wt;
+          }
+        }
+        //console.log(idx);
+        if(sum>0){
+          return idx//true
+        }else{
+          return 0//false
+        }
+    }
+
+    //GET THE CELL VALUE IF PRESENT IN DEPARTMENT
+    function cell_val(cell_name){
+      var value=0;
+      for (var i=0; i<nodes_ref.length; i++){
+        if (nodes_ref[i][0]==cell_name){
+            value=nodes_ref[i][1];
+        }
+      }
+      return value;
+    }
+
+    //GENERATE LAYOUT
+    function genLayout(){
+        var elements=document.getElementsByName("messageBoxName");
+        var str="";
+        var sel_dt=[];
+        for(var i=0; i<elements.length; i++){
+            if(elements[i].checked==true){
+                sel_dt.push(elements[i].value);
+            }
+        }
+        // get the dept name from checkbox selection
+        var conNodes_arr=[]
+        var conEdges_arr=[]
+
+        //console.log(sel_dt);
+        for(var i=0; i<sel_dt.length; i++){
+            var sel_dt_name=sel_dt[i];
+            var dt_val=0;
+            var value=0;
+            var children="";
+            for(var j=0; j<dept_arr.length; j++){
+                var dt_name=dept_arr[j].split("-")[0];//name of the department
+                if(sel_dt_name==dt_name){
+                    var cell_arr=dept_arr[j].split("-")[1].split(",");//get the cells
+                    for(var k=0; k<cell_arr.length; k++){
+                        value+=parseFloat(cell_val(cell_arr[k]));
+                        children+=cell_arr[k]+",";
+                    }
+                }
+            }
+            for(var j=0; j<dept_u_arr.length; j++){
+              var dt_name=dept_u_arr[j];
+              if(sel_dt_name==dt_name){
+                value+=parseFloat(cell_val(dt_name));
+              }
+            }
+            var a=new conNodes(sel_dt_name, value);
+            conNodes_arr.push(a);
+        }
+
+        for(var i=0; i<sel_dt.length; i++){
+          var dt_name0=sel_dt[i];
+          for(var j=i; j<sel_dt.length; j++){
+            var dt_name1=sel_dt[j];
+            if(dt_name0 != dt_name1){
+                var t=check_dt_conx(dt_name0, dt_name1, i, j)
+                if(t != 0){
+                  var u=t.split(",")[0];
+                  var v=t.split(",")[1];
+                  var w=t.split(",")[2];
+                  var a=new conEdges(conNodes_arr[u], conNodes_arr[v], w);
+                  conEdges_arr.push(a);
+            }
+          }
+        }
+      }
+
+      //console.log(conNodes_arr);
+      //console.log(conEdges_arr);
+      if(conEdges_arr.length>0){
+        generateForceLayout(conNodes_arr, conEdges_arr);
+      }
+    }
+
+
+    function generateForceLayout(nodes, edges){
+         d3.selectAll("svg > *").remove();
+         var myNode = document.getElementById("graph");
+         while (myNode.firstChild) {
+             myNode.removeChild(myNode.firstChild);
+         }
+
+         var dataset={nodes,edges};
+         console.log(dataset);
+
+         var w=750, h=500, linkDistance=350;
+         var colors = d3.scale.category10();
+         var widthScale=d3.scale.linear()
+                           .domain([1,1000])
+                           .range([20,100]);
+
+         var svg = d3.select("#graph") .append("svg")
+                         .attr("width",w)
+                         .attr("height",h);
+
+         var force = d3.layout.force()
+             .nodes(dataset.nodes)
+             .links(dataset.edges)
+             .size([w,h])
+             .linkDistance([linkDistance])
+             .charge([-2000])
+             .theta(0.5)
+             .gravity(0.50)
+             .start();
+
+         var edges = svg.selectAll("line")
+           .data(dataset.edges)
+           .enter()
+           .append("line")
+           .attr("id",function(d,i) {return 'edge'+i})
+           .attr('marker-end','url(#arrowhead)')
+           .style("stroke","#ccc")
+           .style("pointer-events", "none");
+
+         var nodes = svg.selectAll("rect")
+           .data(dataset.nodes)
+           .enter()
+           .append("rect")
+           .attr("width",function(d){ return widthScale(d.val);})
+           .attr("height",function(d){ return widthScale(d.val);})
+           .style("opacity",0.70)
+           .style("fill",function(d,i){return colors(i);})
+           .call(force.drag)
+
+         var nodelabels = svg.selectAll(".nodelabel")
+            .data(dataset.nodes)
+            .enter()
+            .append("text")
+            .attr({"x":function(d){return d.x;},
+                   "y":function(d){return d.y;},
+                   "class":"nodelabel",
+                   "stroke":"black"})
+            .attr("font-size", 10)
+            .text(function(d){return d.name;});
+
+         var edgepaths = svg.selectAll(".edgepath")
+             .data(dataset.edges)
+             .enter()
+             .append('path')
+             .attr({'d': function(d) {return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y},
+                    'class':'edgepath',
+                    'fill-opacity':0,
+                    'stroke-opacity':0,
+                    'fill':'blue',
+                    'stroke':'red',
+                    'id':function(d,i) {return 'edgepath'+i}})
+             .style("pointer-events", "none");
+
+         var edgelabels = svg.selectAll(".edgelabel")
+             .data(dataset.edges)
+             .enter()
+             .append('text')
+             .style("pointer-events", "none")
+             .attr({'class':'edgelabel',
+                    'id':function(d,i){return 'edgelabel'+i},
+                    'dx':80,
+                    'dy':0,
+                    'font-size':10,
+                    'fill':'#666'});
+
+         edgelabels.append('textPath')
+             .attr('xlink:href',function(d,i) {return '#edgepath'+i})
+             .style("pointer-events", "none")
+             .style("font-size",12)
+             .text(function(d,i){return 'weight '+d.value});
+
+         svg.append('defs').append('marker')
+             .attr({'id':'arrowhead',
+                    'viewBox':'-0 -5 10 10',
+                    'refX':25,
+                    'refY':0,
+                    //'markerUnits':'strokeWidth',
+                    'orient':'auto',
+                    'markerWidth':10,
+                    'markerHeight':10,
+                    'xoverflow':'visible'})
+             .append('svg:path')
+                 .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+                 .attr('fill', 'rgb(10,10,10')
+                 .attr('stroke','#ccc');
+
+         force.on("tick", function(){
+
+         edges.attr({"x1": function(d){return d.source.x;},
+                     "y1": function(d){return d.source.y;},
+                     "x2": function(d){return d.target.x;},
+                     "y2": function(d){return d.target.y;}
+         });
+
+         nodes.attr({"x":function(d){return d.x;},
+                     "y":function(d){return d.y;}
+         });
+
+         nodelabels.attr("x", function(d) { return d.x; })
+                   .attr("y", function(d) { return d.y; });
+
+         edgepaths.attr('d', function(d) { var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y;
+                                            //console.log(d)
+                                            return path});
+
+         edgelabels.attr('transform',function(d,i){
+             if (d.target.x<d.source.x){
+                 bbox = this.getBBox();
+                 rx = bbox.x+bbox.width/2;
+                 ry = bbox.y+bbox.height/2;
+                 return 'rotate(180 '+rx+' '+ry+')';
+                 }
+             else {
+                 return 'rotate(0)';
+                 }
+         });
+     });
+  }
+    </script>
+
+{% endblock %}

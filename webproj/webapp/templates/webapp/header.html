@@ -14,6 +14,32 @@
 		body {
 		  height:100%
 		}
+		button, input[type="button"], input[type="submit"] {
+			background-color: #4CAF50; /* Green */
+			border: none;
+			color: white;
+			padding: 7px 25px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 20px;
+			border-radius: 8px;
+			//box-shadow: 0 9px #999;
+		}
+	button:hover, input[type="button"]:hover, input[type="submit"]:hover {background-color: #3e8e41}
+
+	button:active, input[type="button"]:active, input[type="submit"]:active {
+	  background-color: #3e8e41;
+	  box-shadow: 0 5px #666;
+	  transform: translateY(4px);
+	}
+	input[type=checkbox] {
+    transform: scale(2);
+    -ms-transform: scale(2);
+    -webkit-transform: scale(2);
+    padding: 10px;
+}
+
 	</style>
 </head>
 
@@ -46,13 +72,16 @@
 			<!--<div class="well bs-sidebar" id="sidebar" style="background-color:#fff">-->
 			  <ul class="nav nav-pills nav-stacked flex-column">
 				<li><a href='/'>Home</a></li><br>
-				<li><a href='/data/'>Data</a></li><br>
+				<li><a href='/data/'>Display Data</a></li><br>
 				<li><a href='/contact/'>Contact</a></li><br>
-				  <li><a href='/layout-ex/'>Example Layout System</a></li><br>
-				  <li><a href='/layout-cells/'>Layout Individual Cells</a></li><br>
-				  <li><a href='/layout-dept/'>Layout Department</a></li><br>
-				  <li><a href='/dept-cells/'>Department & Cells Treemap</a></li><br>
-				  <li><a href='/dept-dept/'>Search Department & Connect</a></li><br>
+			  <!--<li><a href='/layout-ex/'>Example Layout System</a></li><br>-->
+			  <li><a href='/layout-cells/'>Force Layout Individual Cells</a></li><br>
+			  <li><a href='/layout-dept/'>Force Layout Department</a></li><br>
+			  <li><a href='/dept-cells/'>Treemap of Department & Cells</a></li><br>
+			  <li><a href='/dept-dept/'>Treemap of Departments</a></li><br>
+			  <li><a href='/cells/'>Treemap of Cells</a></li><br>
+			  <li><a href='/flo-dept/'>Select Dept & Generate L/O </a></li><br>
+				<li><a href='/flo-cells/'>Select Dept & Generate CELL L/O </a></li><br>
 			  </ul>
 			</div> <!--well bs-sidebar affix-->
 		  </div> <!--col-sm-2-->
@@ -76,4 +105,3 @@
 </body>
 
 </html>
-

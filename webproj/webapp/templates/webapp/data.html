@@ -1,8 +1,97 @@
 {% extends "webapp/header.html" %}
 
 {% block content %}
-    {% for obj in object_list %}
-    <h5><a href="/data/{{obj.id}}">{{obj.fname}}</a> &nbsp</h5> <p>{{obj.date| date:"Y-m-d"}}</p>
-    {% endfor %}
+<div style="width:100%">
+  <div id="options" style="float:left; width:30%;">
+    <input type="radio" name="opt" value="0">&nbsp; Nodes and Head Count<br>
+    <input type="radio" name="opt" value="1">&nbsp; All relations between Cells<br>
+    <input type="radio" name="opt" value="2">&nbsp; Department with Cells<br>
+    <input type="radio" name="opt" value="3">&nbsp; Department without Cells<br>
+    <input type="radio" name="opt" value="4">&nbsp; Department connections<br>
+    <br><br>Select an option to display contents<br><br>
+    <button onclick="displayList()">Display</button>
+  </div>
+  <div id="display" style="float:left">
+  </div>
+</div>
+
+  <script type="text/javascript">
+
+    var nodes_ref= {{nodes | safe}};
+    var global_ucell_rel_li= {{global_ucell_rel_li | safe}};
+    var dept_li= {{req_dept_cell_str | safe}};
+    var dept_u_li= {{req_dept_unique_str | safe}};
+    var dt_conn_li_str= {{dt_conn_li_str | safe}};
+
+    /*
+    console.log(nodes_ref);
+    console.log(global_ucell_rel_li);
+    console.log(dept_li);
+    console.log(dept_u_li);
+    console.log(dt_conn_li_str);
+    */
+
+    function displayList(){
+      var myNode=document.getElementById("display");
+      while (myNode.firstChild){
+        myNode.removeChild(myNode.firstChild);
+      }
+      var req_opt = document.querySelector('input[name = "opt"]:checked').value;
+      var list=document.getElementById("display");
+      if(req_opt==0){
+        for(var i=0; i<nodes_ref.length; i++){
+          var item=document.createElement("list");
+          var label=document.createElement("label");
+          label.htmlFor="id";
+          label.appendChild(document.createTextNode(i+") "+nodes_ref[i]));
+          list.appendChild(label);
+          var linebreak=document.createElement("br");
+          list.appendChild(linebreak);
+        }
+      }else if(req_opt==1){
+        for(var i=0; i<global_ucell_rel_li.length; i++){
+          var item=document.createElement("list");
+          var label=document.createElement("label");
+          label.htmlFor="id";
+          label.appendChild(document.createTextNode(i+") "+global_ucell_rel_li[i]));
+          list.appendChild(label);
+          var linebreak=document.createElement("br");
+          list.appendChild(linebreak);
+        }
+      }else if(req_opt==2){
+        for(var i=0; i<dept_li.length; i++){
+          var item=document.createElement("list");
+          var label=document.createElement("label");
+          label.htmlFor="id";
+          label.appendChild(document.createTextNode(i+") "+dept_li[i]));
+          list.appendChild(label);
+          var linebreak=document.createElement("br");
+          list.appendChild(linebreak);
+        }
+      }else if(req_opt==3){
+        for(var i=0; i<dept_u_li.length; i++){
+          var item=document.createElement("list");
+          var label=document.createElement("label");
+          label.htmlFor="id";
+          label.appendChild(document.createTextNode(i+") "+dept_u_li[i]));
+          list.appendChild(label);
+          var linebreak=document.createElement("br");
+          list.appendChild(linebreak);
+        }
+      }else if(req_opt==4){
+        for(var i=0; i<dt_conn_li_str.length; i++){
+          var item=document.createElement("list");
+          var label=document.createElement("label");
+          label.htmlFor="id";
+          label.appendChild(document.createTextNode(i+") "+dt_conn_li_str[i]));
+          list.appendChild(label);
+          var linebreak=document.createElement("br");
+          list.appendChild(linebreak);
+        }
+      }
+    }
+
+
+  </script>
 
 {% endblock %}

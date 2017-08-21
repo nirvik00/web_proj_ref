@@ -25,15 +25,18 @@
        var cells=dept_arr[i].split("-")[1];
        var cells_arr=cells.split(",");
        val=0;
+       var cell_obj_arr_child=[];
        for(var j=0; j<cells_arr.length-1; j++){
            for (var k=0; k<nodes.length; k++){
                 if(nodes[k][0]==cells_arr[j]){
                     val+=parseFloat(nodes[k][1]);
+                    var b=new cellObj(nodes[k][0],nodes[k][1],[]);
+                    cell_obj_arr_child.push(b);
                 }
            }
        }
        //console.log("add : "+dept_name+","+val);
-       var a=new cellObj(dept_name, val, []);
+       var a=new cellObj(dept_name, val, cell_obj_arr_child);
        cellobj_arr.push(a);
     }
 
@@ -65,11 +68,11 @@
     var color=d3.scale.category10()
 
     var canvas=d3.select("#treemap").append("svg")
-       .attr("width",700)
-       .attr("height",700);
+       .attr("width",1200)
+       .attr("height",900);
 
     var treemap=d3.layout.treemap()
-       .size([500,500])
+       .size([1150,850])
        .nodes(odata);
 
     console.log(treemap);
